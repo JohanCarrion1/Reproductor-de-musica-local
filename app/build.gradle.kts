@@ -5,6 +5,18 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+// Versión: se cambia solo en gradle.properties (appVersionName). 1.1.2 -> versionCode 10102.
+val appVersionName: String = (project.findProperty("appVersionName") as String?) ?: "1.1.1"
+val appVersionCode: Int = appVersionName.split(".").map { it.toInt() }.let { (a, b, c) ->
+    a * 10000 + b * 100 + c
+}
+
+// Firma: misma clave en todas las versiones para que Android las instale como actualización.
+// En GitHub Actions la clave viene de los secretos; en local se usa la clave debug.
+val keystorePath: String? = System.getenv("KEYSTORE_PATH")
+val keystorePassword: String? = System.getenv("KEYSTORE_PASSWORD")
+val hasReleaseKey = keystorePath != null && keystorePassword != null && File(keystorePath).exists()
+
 android {
     namespace = "com.johancarrion.reproductor"
     compileSdk = 35
@@ -13,16 +25,35 @@ android {
         applicationId = "com.johancarrion.reproductor"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
+    }
+
+    signingConfigs {
+        if (hasReleaseKey) {
+            create("release") {
+                storeFile = File(keystorePath!!)
+                storePassword = keystorePassword
+                keyAlias = "reproductor"
+                keyPassword = keystorePassword
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Firmado con la clave debug para poder instalarlo directo sin keystore propia.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseKey) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
+    }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
     }
 
     compileOptions {

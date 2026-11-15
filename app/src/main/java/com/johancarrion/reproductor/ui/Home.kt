@@ -97,14 +97,6 @@ fun HomeScreen() {
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                Modifier.size(44.dp).clip(CircleShape).background(p.accent),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Rounded.Headphones, null, tint = Color.White, modifier = Modifier.size(26.dp))
-            }
-            Spacer(Modifier.width(10.dp))
-            Text("Reproductor", color = p.text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.weight(1f))
             HeaderIcon(Icons.Rounded.Search) { ui.push(Route.Search) }
             HeaderIcon(Icons.AutoMirrored.Rounded.Sort) { showSort = true }
