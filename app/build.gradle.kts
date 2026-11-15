@@ -16,7 +16,7 @@ val appVersionCode: Int = appVersionName.split(".").map { it.toInt() }.let { (a,
 val keystorePath: String =
     System.getenv("KEYSTORE_PATH") ?: rootProject.file("keystore/reproductor.jks").absolutePath
 val keystorePassword: String =
-    System.getenv("KEYSTORE_PASSWORD") ?: "d1ba7dc7f0efb1e5e5d5e5ec"
+    System.getenv("KEYSTORE_PASSWORD") ?: "d5f6281e72ce3af034ef1168"
 val hasReleaseKey = File(keystorePath).exists()
 
 android {
