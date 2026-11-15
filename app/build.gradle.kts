@@ -12,10 +12,12 @@ val appVersionCode: Int = appVersionName.split(".").map { it.toInt() }.let { (a,
 }
 
 // Firma: misma clave en todas las versiones para que Android las instale como actualización.
-// En GitHub Actions la clave viene de los secretos; en local se usa la clave debug.
-val keystorePath: String? = System.getenv("KEYSTORE_PATH")
-val keystorePassword: String? = System.getenv("KEYSTORE_PASSWORD")
-val hasReleaseKey = keystorePath != null && keystorePassword != null && File(keystorePath).exists()
+// La clave vive en keystore/reproductor.jks (se puede sobrescribir con KEYSTORE_PATH / KEYSTORE_PASSWORD).
+val keystorePath: String =
+    System.getenv("KEYSTORE_PATH") ?: rootProject.file("keystore/reproductor.jks").absolutePath
+val keystorePassword: String =
+    System.getenv("KEYSTORE_PASSWORD") ?: "d1ba7dc7f0efb1e5e5d5e5ec"
+val hasReleaseKey = File(keystorePath).exists()
 
 android {
     namespace = "com.johancarrion.reproductor"
@@ -32,7 +34,7 @@ android {
     signingConfigs {
         if (hasReleaseKey) {
             create("release") {
-                storeFile = File(keystorePath!!)
+                storeFile = File(keystorePath)
                 storePassword = keystorePassword
                 keyAlias = "reproductor"
                 keyPassword = keystorePassword

@@ -38,4 +38,6 @@ app/src/main/java/com/johancarrion/reproductor/
 - Permisos: audio y video (`READ_MEDIA_*` en Android 13+, `READ_EXTERNAL_STORAGE` antes) y notificaciones.
 - Requiere Android 8.0 (API 26) o superior.
 - "Eliminado recientemente" mueve las canciones a una papelera propia de la app; el archivo solo se borra del teléfono cuando eliges eliminar definitivamente (Android pide confirmación).
-- El APK es de depuración, firmado con la clave debug, listo para instalar directo.
+- El APK sale firmado siempre con la misma clave (`keystore/reproductor.jks`), así cada versión se instala encima de la anterior sin desinstalar.
+- Para sacar una versión nueva solo cambia `appVersionName` en `gradle.properties` (1.1.1 → 1.1.2 → …) y haz push; el `versionCode` se calcula solo y el APK se llama `Reproductor-v<versión>.apk`.
+- La clave está en el repo a propósito para que no haya pasos manuales. Si algún día quieres más seguridad, muévela a secretos de GitHub (cambiar la clave obliga a reinstalar la app una vez).
