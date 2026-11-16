@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Solo la nota (sin fondo). Se tiñe desde Compose. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+    <group android:translateX="-14" android:translateY="-11">
+        <group android:rotation="-20" android:pivotX="32" android:pivotY="74">
+            <path
+                android:fillColor="#FFFFFF"
+                android:pathData="M18,74a14,11 0 1,0 28,0a14,11 0 1,0 -28,0z" />
+        </group>
+        <group android:rotation="-20" android:pivotX="76" android:pivotY="66">
+            <path
+                android:fillColor="#FFFFFF"
+                android:pathData="M62,66a14,11 0 1,0 28,0a14,11 0 1,0 -28,0z" />
+        </group>
+        <path
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3"
+            android:strokeLineJoin="round"
+            android:pathData="M40,28L90,17L90,66L84,66L84,32.3L46,40.7L46,74L40,74Z" />
+    </group>
+</vector>

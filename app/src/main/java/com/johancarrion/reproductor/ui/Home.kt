@@ -20,12 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.Player
 import com.johancarrion.reproductor.Graph
+import com.johancarrion.reproductor.R
 import com.johancarrion.reproductor.data.Track
 import com.johancarrion.reproductor.data.sortTracks
 
@@ -97,6 +99,14 @@ fun HomeScreen() {
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_note_logo),
+                contentDescription = null,
+                tint = p.text,
+                modifier = Modifier.size(38.dp)
+            )
+            Spacer(Modifier.width(10.dp))
+            Text(tr("Música", "Music"), color = p.text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.weight(1f))
             HeaderIcon(Icons.Rounded.Search) { ui.push(Route.Search) }
             HeaderIcon(Icons.AutoMirrored.Rounded.Sort) { showSort = true }
