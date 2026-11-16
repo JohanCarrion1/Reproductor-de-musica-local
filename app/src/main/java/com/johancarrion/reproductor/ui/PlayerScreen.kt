@@ -133,7 +133,7 @@ fun PlayerScreen() {
 
         // Progreso
         val maxV = maxOf(dur, 1L).toFloat()
-        DotSlider(
+        WaveSlider(
             value = (if (dragging) dragValue else pos.toFloat()).coerceIn(0f, maxV),
             onValueChange = { dragging = true; dragValue = it },
             onValueChangeFinished = {
@@ -141,6 +141,7 @@ fun PlayerScreen() {
                 dragging = false
             },
             valueRange = 0f..maxV,
+            playing = playing,
             modifier = Modifier.fillMaxWidth()
         )
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {

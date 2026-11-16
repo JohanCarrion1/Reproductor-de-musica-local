@@ -8,8 +8,16 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import kotlin.math.sin
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.ui.unit.DpSize
@@ -24,6 +32,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -113,20 +122,103 @@ fun DotSlider(
                 interactionSource = source,
                 colors = colors,
                 enabled = enabled,
-                thumbSize = DpSize(18.dp, 18.dp)
+                thumbSize = DpSize(14.dp, 14.dp)
             )
         },
         track = { state ->
-            SliderDefaults.Track(
-                sliderState = state,
-                colors = colors,
-                enabled = enabled,
-                drawStopIndicator = null,
-                thumbTrackGapSize = 0.dp,
-                trackInsideCornerSize = 0.dp
-            )
+            // Pista delgada (4 dp) dibujada a mano.
+            val span = state.valueRange.endInclusive - state.valueRange.start
+            val f = if (span > 0f) ((state.value - state.valueRange.start) / span).coerceIn(0f, 1f) else 0f
+            Box(
+                Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(50))
+                    .background(if (enabled) p.muted.copy(alpha = 0.3f) else p.muted.copy(alpha = 0.2f))
+            ) {
+                Box(
+                    Modifier.fillMaxWidth(f).fillMaxHeight()
+                        .background(if (enabled) p.accent else p.muted)
+                )
+            }
         }
     )
+}
+
+/**
+ * Barra de progreso "ondulada" (como la de One UI): el tramo ya reproducido hace una onda que
+ * fluye mientras suena y se aplana al pausar; el resto va recto, con un puntito en la posición actual.
+ * La interacción (tocar / arrastrar) la maneja un Slider invisible encima.
+ */
+@Composable
+fun WaveSlider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>,
+    playing: Boolean,
+    modifier: Modifier = Modifier,
+    onValueChangeFinished: (() -> Unit)? = null
+) {
+    val p = pal()
+    val thumbSize = 16.dp
+    val amp by animateFloatAsState(if (playing) 1f else 0f, tween(450), label = "waveAmp")
+    val transition = rememberInfiniteTransition(label = "wave")
+    val phase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(tween(1400, easing = LinearEasing)),
+        label = "wavePhase"
+    )
+    val span = valueRange.endInclusive - valueRange.start
+    val frac = if (span > 0f) ((value - valueRange.start) / span).coerceIn(0f, 1f) else 0f
+    val active = p.accent
+    val inactive = p.muted.copy(alpha = 0.35f)
+
+    Box(modifier.fillMaxWidth().height(48.dp)) {
+        Canvas(Modifier.matchParentSize()) {
+            val inset = thumbSize.toPx() / 2f
+            val x0 = inset
+            val x1 = size.width - inset
+            val xp = x0 + (x1 - x0) * frac
+            val cy = size.height / 2f
+            val stroke = 3.dp.toPx()
+            val amplitude = 3.dp.toPx() * amp
+            val waveLen = 22.dp.toPx()
+            val taper = waveLen * 0.7f
+            val twoPi = (2 * Math.PI).toFloat()
+
+            // Tramo que falta: línea recta
+            drawLine(inactive, Offset(xp, cy), Offset(x1, cy), strokeWidth = stroke, cap = StrokeCap.Round)
+
+            // Tramo reproducido: onda que se aplana al llegar al puntito
+            if (xp - x0 > 1f) {
+                val path = Path()
+                val step = 3.dp.toPx()
+                var x = x0
+                var first = true
+                while (x < xp) {
+                    val k = ((xp - x) / taper).coerceIn(0f, 1f)
+                    val y = cy + amplitude * k * sin(twoPi * (x - x0) / waveLen - phase)
+                    if (first) { path.moveTo(x, y); first = false } else path.lineTo(x, y)
+                    x += step
+                }
+                path.lineTo(xp, cy)
+                drawPath(
+                    path, active,
+                    style = Stroke(width = stroke, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                )
+            }
+
+            // Puntito
+            drawCircle(active, radius = 7.dp.toPx(), center = Offset(xp, cy))
+        }
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth().align(Alignment.Center),
+            valueRange = valueRange,
+            onValueChangeFinished = onValueChangeFinished,
+            thumb = { Spacer(Modifier.size(thumbSize)) },
+            track = { Spacer(Modifier.fillMaxWidth().height(2.dp)) }
+        )
+    }
 }
 
 /** Evita que los toques atraviesen una pantalla superpuesta hacia la que está debajo. */
