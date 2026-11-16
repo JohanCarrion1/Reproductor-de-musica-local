@@ -147,6 +147,7 @@ fun DotSlider(
  * fluye mientras suena y se aplana al pausar; el resto va recto, con un puntito en la posición actual.
  * La interacción (tocar / arrastrar) la maneja un Slider invisible encima.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WaveSlider(
     value: Float,
