@@ -10,6 +10,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import com.johancarrion.reproductor.Graph
 
 @Immutable
@@ -68,7 +70,12 @@ fun ReproductorTheme(content: @Composable () -> Unit) {
     val theme by Graph.settings.theme.flow.collectAsState()
     val accent by Graph.settings.accent.flow.collectAsState()
     val lang by Graph.settings.lang.flow.collectAsState()
+    val uiScale by Graph.settings.uiScale.flow.collectAsState()
     val p = makePalette(theme, accent)
+    // Se parte de la densidad y el tamaño de letra reales del sistema (DPI, "Tamaño de fuente")
+    // y se aplica encima la escala de la app, así sigue reaccionando a los cambios de DPI.
+    val sys = LocalDensity.current
+    val density = Density(sys.density * uiScale, sys.fontScale)
     val scheme = if (p.dark) {
         darkColorScheme(
             primary = p.accent, onPrimary = Color.White,
@@ -84,7 +91,11 @@ fun ReproductorTheme(content: @Composable () -> Unit) {
             surfaceVariant = p.chip, onSurfaceVariant = p.muted
         )
     }
-    CompositionLocalProvider(LocalPalette provides p, LocalLang provides lang) {
+    CompositionLocalProvider(
+        LocalPalette provides p,
+        LocalLang provides lang,
+        LocalDensity provides density
+    ) {
         MaterialTheme(colorScheme = scheme, content = content)
     }
 }

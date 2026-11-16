@@ -4,11 +4,12 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- La nota mide ~50 % del área visible y su caja queda centrada exactamente en (54,54). -->
     <group
-        android:scaleX="0.7"
-        android:scaleY="0.7"
-        android:translateX="16.2"
-        android:translateY="18.5">
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:translateX="26.55"
+        android:translateY="28.78">
         <group android:rotation="-20" android:pivotX="32" android:pivotY="74">
             <path
                 android:fillColor="#FFFFFF"

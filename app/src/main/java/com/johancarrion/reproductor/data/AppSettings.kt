@@ -44,6 +44,9 @@ class AppSettings(ctx: Context) {
     /** classic | amoled | light */
     val theme = Pref(sp, "theme", "classic")
     val accent = Pref(sp, "accent", 0)
+
+    /** Escala de toda la interfaz (letras y tamaños) sobre lo que marque el sistema: 0.8 | 0.88 | 1.0 */
+    val uiScale = Pref(sp, "uiScale", 0.88f)
     val lang = Pref(sp, "lang", if (Locale.getDefault().language == "en") "en" else "es")
 
     /** recent | plays | az | artist | duration */

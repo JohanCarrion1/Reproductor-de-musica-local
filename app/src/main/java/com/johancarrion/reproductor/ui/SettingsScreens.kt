@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
@@ -159,6 +160,7 @@ private fun ThemeSheet(onDismiss: () -> Unit) {
     val p = pal()
     val theme by Graph.settings.theme.flow.collectAsState()
     val accent by Graph.settings.accent.flow.collectAsState()
+    val uiScale by Graph.settings.uiScale.flow.collectAsState()
     AppSheet(onDismiss) {
         SheetTitle(tr("Tema", "Theme"))
         val themes = listOf(
@@ -186,6 +188,33 @@ private fun ThemeSheet(onDismiss: () -> Unit) {
                 ) {
                     if (i == accent) Icon(Icons.Rounded.Check, null, tint = Color.White)
                 }
+            }
+        }
+        Text(
+            tr("Tamaño de la interfaz", "Interface size"),
+            color = p.muted, fontSize = 15.sp,
+            modifier = Modifier.padding(start = 24.dp, top = 16.dp, bottom = 8.dp)
+        )
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            val sizes = listOf(
+                0.8f to tr("Pequeña", "Small"),
+                0.88f to tr("Compacta", "Compact"),
+                1f to tr("Normal", "Normal")
+            )
+            for ((v, label) in sizes) {
+                val sel = kotlin.math.abs(uiScale - v) < 0.01f
+                Text(
+                    label,
+                    color = if (sel) Color.White else p.muted,
+                    fontSize = 16.sp,
+                    modifier = Modifier.clip(RoundedCornerShape(50))
+                        .background(if (sel) p.accent else p.chip)
+                        .clickable { Graph.settings.uiScale.value = v }
+                        .padding(horizontal = 18.dp, vertical = 10.dp)
+                )
             }
         }
         Spacer(Modifier.height(10.dp))
