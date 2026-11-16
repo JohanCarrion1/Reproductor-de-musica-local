@@ -9,6 +9,10 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -73,6 +77,57 @@ fun tr(es: String, en: String): String = if (LocalLang.current == "en") en else 
 
 @Composable
 fun pal(): Palette = LocalPalette.current
+
+/** Slider con un puntito redondo como control (sin la barra vertical ni el punto final). */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DotSlider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onValueChangeFinished: (() -> Unit)? = null
+) {
+    val p = pal()
+    val colors = SliderDefaults.colors(
+        thumbColor = p.accent,
+        activeTrackColor = p.accent,
+        inactiveTrackColor = p.muted.copy(alpha = 0.3f),
+        disabledThumbColor = p.muted,
+        disabledActiveTrackColor = p.muted,
+        disabledInactiveTrackColor = p.muted.copy(alpha = 0.2f)
+    )
+    val source = remember { MutableInteractionSource() }
+    Slider(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        enabled = enabled,
+        valueRange = valueRange,
+        onValueChangeFinished = onValueChangeFinished,
+        colors = colors,
+        interactionSource = source,
+        thumb = {
+            SliderDefaults.Thumb(
+                interactionSource = source,
+                colors = colors,
+                enabled = enabled,
+                thumbSize = DpSize(18.dp, 18.dp)
+            )
+        },
+        track = { state ->
+            SliderDefaults.Track(
+                sliderState = state,
+                colors = colors,
+                enabled = enabled,
+                drawStopIndicator = null,
+                thumbTrackGapSize = 0.dp,
+                trackInsideCornerSize = 0.dp
+            )
+        }
+    )
+}
 
 /** Evita que los toques atraviesen una pantalla superpuesta hacia la que está debajo. */
 fun Modifier.blockTouches(): Modifier = this.pointerInput(Unit) { detectTapGestures { } }

@@ -343,7 +343,12 @@ fun MiniPlayer() {
                 modifier = Modifier.size(28.dp)
             )
         }
-        Spacer(Modifier.width(6.dp))
+        Box(
+            Modifier.size(42.dp).clip(CircleShape).clickable { Graph.player.previous() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Rounded.FastRewind, null, tint = p.text, modifier = Modifier.size(30.dp))
+        }
         Box(
             Modifier.size(58.dp).clip(CircleShape).clickable { Graph.player.toggle() },
             contentAlignment = Alignment.Center
@@ -359,6 +364,12 @@ fun MiniPlayer() {
                 if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                 null, tint = p.text, modifier = Modifier.size(32.dp)
             )
+        }
+        Box(
+            Modifier.size(42.dp).clip(CircleShape).clickable { Graph.player.next() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Rounded.FastForward, null, tint = p.text, modifier = Modifier.size(30.dp))
         }
     }
 }

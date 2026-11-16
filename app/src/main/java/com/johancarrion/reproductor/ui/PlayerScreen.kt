@@ -48,6 +48,8 @@ fun PlayerScreen() {
     val playing by Graph.player.isPlaying.collectAsState()
     val pos by Graph.player.positionMs.collectAsState()
     val dur by Graph.player.durationMs.collectAsState()
+    val shuffleOn by Graph.player.shuffle.collectAsState()
+    val repeatMode by Graph.player.repeatMode.collectAsState()
     val track = remember(all, currentId) { all.firstOrNull { it.id == currentId } }
 
     var showLyrics by rememberSaveable { mutableStateOf(false) }
@@ -63,7 +65,7 @@ fun PlayerScreen() {
 
     Column(
         Modifier.fillMaxSize().background(p.player).blockTouches()
-            .statusBarsPadding().navigationBarsPadding().padding(horizontal = 20.dp)
+            .statusBarsPadding().navigationBarsPadding().padding(horizontal = 40.dp)
     ) {
         // Barra superior: cerrar
         Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -131,7 +133,7 @@ fun PlayerScreen() {
 
         // Progreso
         val maxV = maxOf(dur, 1L).toFloat()
-        Slider(
+        DotSlider(
             value = (if (dragging) dragValue else pos.toFloat()).coerceIn(0f, maxV),
             onValueChange = { dragging = true; dragValue = it },
             onValueChangeFinished = {
@@ -139,11 +141,6 @@ fun PlayerScreen() {
                 dragging = false
             },
             valueRange = 0f..maxV,
-            colors = SliderDefaults.colors(
-                thumbColor = p.accent,
-                activeTrackColor = p.accent,
-                inactiveTrackColor = p.muted.copy(alpha = 0.3f)
-            ),
             modifier = Modifier.fillMaxWidth()
         )
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
@@ -161,25 +158,46 @@ fun PlayerScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                Modifier.size(84.dp).clip(CircleShape).clickable { Graph.player.previous() },
+                Modifier.size(46.dp).clip(CircleShape).clickable { Graph.player.toggleShuffle() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Rounded.FastRewind, null, tint = p.accent, modifier = Modifier.size(64.dp))
+                Icon(
+                    Icons.Rounded.Shuffle, null,
+                    tint = if (shuffleOn) p.accent else p.muted,
+                    modifier = Modifier.size(28.dp)
+                )
             }
             Box(
-                Modifier.size(96.dp).clip(CircleShape).clickable { Graph.player.toggle() },
+                Modifier.size(64.dp).clip(CircleShape).clickable { Graph.player.previous() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Rounded.FastRewind, null, tint = p.accent, modifier = Modifier.size(48.dp))
+            }
+            Box(
+                Modifier.size(84.dp).clip(CircleShape).clickable { Graph.player.toggle() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                    null, tint = p.accent, modifier = Modifier.size(84.dp)
+                    null, tint = p.accent, modifier = Modifier.size(72.dp)
                 )
             }
             Box(
-                Modifier.size(84.dp).clip(CircleShape).clickable { Graph.player.next() },
+                Modifier.size(64.dp).clip(CircleShape).clickable { Graph.player.next() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Rounded.FastForward, null, tint = p.accent, modifier = Modifier.size(64.dp))
+                Icon(Icons.Rounded.FastForward, null, tint = p.accent, modifier = Modifier.size(48.dp))
+            }
+            Box(
+                Modifier.size(46.dp).clip(CircleShape).clickable { Graph.player.cycleRepeat() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    if (repeatMode == Player.REPEAT_MODE_ONE) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat,
+                    null,
+                    tint = if (repeatMode == Player.REPEAT_MODE_OFF) p.muted else p.accent,
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
 
@@ -355,16 +373,11 @@ fun EqualizerSheet(onDismiss: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(label, color = p.muted, fontSize = 14.sp, modifier = Modifier.width(70.dp))
-                Slider(
+                DotSlider(
                     value = gains.getOrElse(i) { 0f }.coerceIn(EqualizerManager.minDb, EqualizerManager.maxDb),
                     onValueChange = { EqualizerManager.setGain(i, it) },
                     valueRange = EqualizerManager.minDb..EqualizerManager.maxDb,
                     enabled = on,
-                    colors = SliderDefaults.colors(
-                        thumbColor = p.accent,
-                        activeTrackColor = p.accent,
-                        inactiveTrackColor = p.muted.copy(alpha = 0.3f)
-                    ),
                     modifier = Modifier.weight(1f)
                 )
                 Text(
