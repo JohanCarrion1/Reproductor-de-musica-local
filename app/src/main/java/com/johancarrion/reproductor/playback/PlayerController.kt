@@ -62,6 +62,8 @@ class PlayerController(
     /** Momento (epoch ms) en que se apaga la música; 0 = temporizador apagado. */
     val sleepEndsAt = MutableStateFlow(0L)
     val sleepEndOfTrack = MutableStateFlow(false)
+    val sleepMinutes = MutableStateFlow(0)
+    private var sleepTrackId = -1L
 
     private var restored = false
     private var listenedMs = 0L
@@ -179,13 +181,15 @@ class PlayerController(
         val end = sleepEndsAt.value
         if (end > 0 && System.currentTimeMillis() >= end) {
             c.pause()
-            sleepEndsAt.value = 0L
+            clearSleep()
         }
-        if (sleepEndOfTrack.value && c.isPlaying) {
+        if (sleepEndOfTrack.value) {
             val d = c.duration
-            if (d != C.TIME_UNSET && d - c.currentPosition < 500) {
+            val left = if (d != C.TIME_UNSET) d - c.currentPosition else Long.MAX_VALUE
+            val speedNow = c.playbackParameters.speed.coerceAtLeast(1f)
+            if (currentId.value != sleepTrackId || left < (800 * speedNow).toLong()) {
                 c.pause()
-                sleepEndOfTrack.value = false
+                clearSleep()
             }
         }
     }
@@ -288,16 +292,20 @@ class PlayerController(
 
     fun setSleepMinutes(minutes: Int) {
         sleepEndOfTrack.value = false
+        sleepMinutes.value = minutes
         sleepEndsAt.value = System.currentTimeMillis() + minutes * 60_000L
     }
 
     fun setSleepEndOfTrack() {
         sleepEndsAt.value = 0L
+        sleepMinutes.value = 0
+        sleepTrackId = currentId.value
         sleepEndOfTrack.value = true
     }
 
     fun clearSleep() {
         sleepEndsAt.value = 0L
+        sleepMinutes.value = 0
         sleepEndOfTrack.value = false
     }
 }

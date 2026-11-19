@@ -22,6 +22,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -133,7 +134,7 @@ fun PlayerScreen() {
 
         // Progreso
         val maxV = maxOf(dur, 1L).toFloat()
-        WaveSlider(
+        DotSlider(
             value = (if (dragging) dragValue else pos.toFloat()).coerceIn(0f, maxV),
             onValueChange = { dragging = true; dragValue = it },
             onValueChangeFinished = {
@@ -141,7 +142,6 @@ fun PlayerScreen() {
                 dragging = false
             },
             valueRange = 0f..maxV,
-            playing = playing,
             modifier = Modifier.fillMaxWidth()
         )
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
@@ -411,13 +411,24 @@ fun SpeedSheet(onDismiss: () -> Unit) {
 fun SleepTimerSheet(onDismiss: () -> Unit) {
     val endsAt by Graph.player.sleepEndsAt.collectAsState()
     val endOfTrack by Graph.player.sleepEndOfTrack.collectAsState()
+    val chosen by Graph.player.sleepMinutes.collectAsState()
+    var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(endsAt) { while (endsAt > 0) { now = System.currentTimeMillis(); delay(1000) } }
     AppSheet(onDismiss) {
         SheetTitle(tr("Temporizador para dormir", "Sleep timer"))
+        if (endsAt > 0) {
+            val left = ((endsAt - now) / 1000).coerceAtLeast(0)
+            Text(
+                tr("Se pausa en %d:%02d".format(left / 60, left % 60), "Pauses in %d:%02d".format(left / 60, left % 60)),
+                color = pal().accent, fontSize = 15.sp,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 2.dp)
+            )
+        }
         SheetItem(tr("Apagar", "Off"), selected = endsAt == 0L && !endOfTrack) {
             Graph.player.clearSleep(); onDismiss()
         }
         for (m in listOf(15, 30, 45, 60, 90)) {
-            SheetItem(tr("$m minutos", "$m minutes")) {
+            SheetItem(tr("$m minutos", "$m minutes"), selected = chosen == m && endsAt > 0) {
                 Graph.player.setSleepMinutes(m); onDismiss()
             }
         }
